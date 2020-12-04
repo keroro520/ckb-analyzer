@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 mod main_chain;
 mod network_probe;
 mod network_topology;
+mod fork;
 
 pub use main_chain::{select_last_block_number_in_influxdb, MainChain, MainChainConfig};
 pub use network_probe::NetworkProbe;
