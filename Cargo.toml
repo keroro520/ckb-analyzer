@@ -28,6 +28,14 @@ serde = { version = "1.0.117", features = [ "derive" ] }
 serde_json = { version = "1.0.59" }
 case_style = { version = "0.2.1" }
 tynm = "0.1.6"
+jsonrpc-core = "15.1"
+jsonrpc-derive = "15.1"
+jsonrpc-tcp-server = "15.1"
+jsonrpc-ws-server = "15.1"
+jsonrpc-server-utils = "15.1"
+jsonrpc-pubsub = "15.1"
+jsonrpc-core-client = "15.1"
+jsonrpc-client-transports = "15.1"
 
 [workspace]
 members = [
