@@ -2,20 +2,22 @@ use crossbeam::channel::Sender;
 use influxdb::{Client as Influx, WriteQuery};
 use serde::{Deserialize, Serialize};
 
+mod fork;
 mod main_chain;
 mod network_probe;
 mod network_topology;
-mod fork;
 
 pub use main_chain::{select_last_block_number_in_influxdb, MainChain, MainChainConfig};
 pub use network_probe::NetworkProbe;
 pub use network_topology::{NetworkTopology, NetworkTopologyConfig};
+pub use fork::{Fork, ForkConfig};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Analyzer {
     MainChain(MainChainConfig),
     NetworkProbe,
     NetworkTopology(NetworkTopologyConfig),
+    Fork(ForkConfig),
 }
 
 impl Analyzer {
@@ -29,6 +31,10 @@ impl Analyzer {
             }
             Self::NetworkProbe => NetworkProbe::new(query_sender).run().await,
             Self::NetworkTopology(config) => NetworkTopology::new(config).run().await,
+            Self::Fork(config) =>{
+                // let (mut fork, subscription) = Fork::init(config);
+                // fork.run().join(subscription.run()).await
+            }
         }
     }
 }

@@ -35,11 +35,11 @@ pub trait SubscriptionRpc {
 pub struct Subscription {
     pub address: SocketAddr,
     pub topic: Topic,
-    pub senders: Vec<Sender<String>>,
+    pub sender: Sender<String>,
 }
 
 impl Subscription {
-    pub fn new(ckb_subscription_url: String, topic: Topic) -> Self {
+    pub fn new(ckb_subscription_url: String, topic: Topic, sender: Sender<String>) -> Self {
         let address = ckb_subscription_url
             .parse::<SocketAddr>()
             .unwrap_or_else(|err| {
@@ -48,13 +48,8 @@ impl Subscription {
         Self {
             address,
             topic,
-            senders: Vec::new(),
+            sender,
         }
-    }
-
-    pub fn add_sender(mut self, sender: Sender<String>) -> Self {
-        self.senders.push(sender);
-        self
     }
 
     pub async fn run(self) {
@@ -77,29 +72,21 @@ impl Subscription {
         // Construct rpc client which sends messages(requests) to server, and subscribe `NewTipBlock`
         // from server. We get a typed stream of subscription.
         let requester = gen_client::Client::from(sender_channel);
-        let subscription_future = requester.subscribe(self.topic).and_then(
+        let subscription = requester.subscribe(self.topic).and_then(
             |subscriber: TypedSubscriptionStream<String>| {
                 subscriber.for_each(move |message| {
-                    for sender in self.senders.iter() {
-                        sender
-                            .send(message.clone())
-                            .unwrap_or_else(|err| panic!("channel error: {:?}", err));
-                    }
-                    //
-                    // let block: ckb_suite_rpc::ckb_jsonrpc_types::BlockView =
-                    //     serde_from_str(&message)
-                    //         .map_err(|err| RpcError::ParseError(message, err.into()))?;
-                    // let block: ckb_types::core::BlockView = block.into();
-                    // println!("bilibili subscribe block #{}", block.number());
+                    self.sender
+                        .send(message.clone())
+                        .unwrap_or_else(|err| panic!("channel error: {:?}", err));
                     Ok(())
                 })
             },
         );
         duplex
-            .join(subscription_future)
+            .join(subscription)
             .map(|_| ())
-            .map_err(|err| panic!("{:?}", err))
+            .map_err(|err| panic!("map_err error {:?}", err))
             .wait()
-            .unwrap();
+            .unwrap_or_else(|err| panic!("wait error: {:?}", err))
     }
 }

@@ -7,7 +7,15 @@ pub struct Config {
     pub chain: ChainConfig,
     pub network: NetworkConfig,
     pub topology: TopologyConfig,
+    pub fork: ForkConfig,
     pub influxdb: InfluxdbConfig,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ForkConfig {
+    #[serde(default)]
+    pub enabled: bool,
+    pub ckb_subscription_url: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]

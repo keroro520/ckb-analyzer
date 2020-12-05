@@ -15,6 +15,11 @@ ckb_network_identifier = "/ckb_testnet/10639e08"
 # enabled = false
 ckb_urls = []
 
+[fork]
+# default is false
+enabled = true
+ckb_subscription_url = "54.64.188.235:18114"
+
 [influxdb]
 database = "ckb"
 url = "http://127.0.0.1:8086"
