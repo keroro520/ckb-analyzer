@@ -1,6 +1,6 @@
 use crossbeam::channel::Sender;
 use jsonrpc_client_transports::RpcError;
-use jsonrpc_core::{futures::prelude::*, serde_from_str, Result};
+use jsonrpc_core::{futures::prelude::*, Result};
 use jsonrpc_core_client::{
     transports::duplex::{duplex, Duplex},
     RpcChannel, TypedSubscriptionStream,
