@@ -27,8 +27,8 @@ impl NetworkTopology {
 
     pub async fn run(&self) {
         loop {
-            tokio::time::delay_for(Duration::from_secs(60 * 10)).await;
             self.analyze().await;
+            tokio::time::delay_for(Duration::from_secs(60 * 10)).await;
         }
     }
 

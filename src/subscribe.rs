@@ -76,8 +76,9 @@ impl Subscription {
             |subscriber: TypedSubscriptionStream<String>| {
                 subscriber.for_each(move |message| {
                     self.sender
-                        .send(message.clone())
+                        .send(message)
                         .unwrap_or_else(|err| panic!("channel error: {:?}", err));
+                    println!("subscribe : ");
                     Ok(())
                 })
             },

@@ -33,8 +33,9 @@ impl Analyzer {
             Self::NetworkTopology(config) => NetworkTopology::new(config).run().await,
             Self::Fork(config) => {
                 let (fork, subscription) = Fork::init(config);
-                tokio::spawn(subscription.run());
-                fork.run().await
+
+                tokio::spawn(async { subscription.run().await });
+                fork.run().await;
             }
         }
     }

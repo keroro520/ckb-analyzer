@@ -4,6 +4,7 @@ use ckb_types::packed::Byte32;
 use crossbeam::channel::{bounded, Receiver};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use jsonrpc_core::serde_from_str;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ForkConfig {
@@ -30,8 +31,11 @@ impl Fork {
     }
 
     pub async fn run(self) {
-        while let Ok(msg) = self.receiver.recv() {
-            println!("bilibili Fork::run msg: {}", msg);
+        while let Ok(message) = self.receiver.recv() {
+            let block: ckb_suite_rpc::ckb_jsonrpc_types::BlockView = serde_from_str(&message)
+                .unwrap_or_else(|err| panic!("serde_from_str(\"{}\"), error: {:?}", message, err));
+            let block: ckb_types::core::BlockView = block.into();
+            println!("Fork::run block: {}", block.number());
         }
     }
 }

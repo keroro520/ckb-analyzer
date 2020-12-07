@@ -57,7 +57,7 @@ async fn main() {
         tokio::spawn(Analyzer::MainChain(config).run(influx.clone(), query_sender.clone()));
     }
     if CONFIG.network.enabled {
-        tokio::spawn(Analyzer::NetworkProbe.run(influx.clone(), query_sender.clone()));
+        tokio::spawn( Analyzer::NetworkProbe.run(influx.clone(), query_sender.clone()) );
     }
     if CONFIG.topology.enabled {
         let config = NetworkTopologyConfig {
