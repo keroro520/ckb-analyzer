@@ -35,6 +35,9 @@ impl Analyzer {
                 let (fork, subscription) = Fork::init(config);
 
                 tokio::spawn(async { subscription.run().await });
+                // 加了 delay_for 则 subscription.run() 和 fork.run() 跑；
+                // 不加 delay_for 则 只有 fork.run() 在跑
+                tokio::time::delay_for(::std::time::Duration::from_secs(3)).await;
                 fork.run().await;
             }
         }

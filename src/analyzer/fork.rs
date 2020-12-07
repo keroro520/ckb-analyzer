@@ -31,6 +31,7 @@ impl Fork {
     }
 
     pub async fn run(self) {
+        println!("run {}", ::std::any::type_name::<Self>());
         while let Ok(message) = self.receiver.recv() {
             let block: ckb_suite_rpc::ckb_jsonrpc_types::BlockView = serde_from_str(&message)
                 .unwrap_or_else(|err| panic!("serde_from_str(\"{}\"), error: {:?}", message, err));

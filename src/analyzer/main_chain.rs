@@ -45,6 +45,7 @@ impl MainChain {
     }
 
     pub async fn run(&mut self) {
+        println!("run {}", ::std::any::type_name::<Self>());
         self.analyze_blocks().await
     }
 

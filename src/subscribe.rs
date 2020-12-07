@@ -72,17 +72,19 @@ impl Subscription {
         // Construct rpc client which sends messages(requests) to server, and subscribe `NewTipBlock`
         // from server. We get a typed stream of subscription.
         let requester = gen_client::Client::from(sender_channel);
+        let sender = self.sender.clone();
         let subscription = requester.subscribe(self.topic).and_then(
             |subscriber: TypedSubscriptionStream<String>| {
                 subscriber.for_each(move |message| {
-                    self.sender
+                    sender
                         .send(message)
                         .unwrap_or_else(|err| panic!("channel error: {:?}", err));
-                    println!("subscribe : ");
+                    println!("bilibili subscribe : ");
                     Ok(())
                 })
             },
         );
+        println!("subscribe to \"{}\" with topic \"{:?}\"", self.address, self.topic);
         duplex
             .join(subscription)
             .map(|_| ())

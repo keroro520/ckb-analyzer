@@ -46,6 +46,7 @@ impl NetworkProbe {
     }
 
     pub async fn run(&mut self) {
+        println!("run {}", ::std::any::type_name::<Self>());
         let config = app_config().network;
         let network_state = Arc::new(NetworkState::from_config(config).unwrap());
         let exit_handler = DefaultExitHandler::default();
