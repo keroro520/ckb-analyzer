@@ -32,7 +32,7 @@ impl Analyzer {
             Self::NetworkProbe => NetworkProbe::new(query_sender).run().await,
             Self::NetworkTopology(config) => NetworkTopology::new(config).run().await,
             Self::Fork(config) => {
-                let (fork, subscription) = Fork::init(config);
+                let (fork, subscription) = Fork::init(config, query_sender);
 
                 // IMPORTANT: Use tokio 1.0 to run subscription. Since jsonrpc has not support 2.0 yet
                 ::std::thread::spawn(move || {

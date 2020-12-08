@@ -2,8 +2,8 @@ pub use influxdb::{InfluxDbWriteable, Timestamp, WriteQuery};
 
 pub trait IntoWriteQuery: InfluxDbWriteable {
     fn query_name(&self) -> String
-        where
-            Self: std::marker::Sized,
+    where
+        Self: std::marker::Sized,
     {
         let type_name = tynm::type_name::<Self>();
         case_style::CaseStyle::guess(type_name)
@@ -12,8 +12,8 @@ pub trait IntoWriteQuery: InfluxDbWriteable {
     }
 
     fn into_write_query(self) -> WriteQuery
-        where
-            Self: std::marker::Sized,
+    where
+        Self: std::marker::Sized,
     {
         let query_name = self.query_name();
         InfluxDbWriteable::into_query(self, query_name)
@@ -96,4 +96,11 @@ pub struct HighLatency {
 pub struct Peers {
     pub time: Timestamp,
     pub peers_total: u32,
+}
+
+#[derive(InfluxDbWriteable, Clone, Debug)]
+pub struct Fork {
+    // timestamp of 1st block at the new tip chain
+    pub time: Timestamp,
+    pub detached_length: u32,
 }
