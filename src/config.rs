@@ -4,28 +4,32 @@ use std::path::Path;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Config {
+    #[serde(default)]
     pub chain: ChainConfig,
+    #[serde(default)]
     pub network: NetworkConfig,
+    #[serde(default)]
     pub topology: TopologyConfig,
+    #[serde(default)]
     pub fork: ForkConfig,
     pub influxdb: InfluxdbConfig,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct ForkConfig {
     #[serde(default)]
     pub enabled: bool,
     pub ckb_subscription_url: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct ChainConfig {
     #[serde(default)]
     pub enabled: bool,
     pub ckb_url: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct NetworkConfig {
     #[serde(default)]
     pub enabled: bool,
@@ -33,7 +37,7 @@ pub struct NetworkConfig {
     pub ckb_network_identifier: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct TopologyConfig {
     #[serde(default)]
     pub enabled: bool,

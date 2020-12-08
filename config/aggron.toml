@@ -1,12 +1,12 @@
 
 [chain]
 # default is false
-# enabled = false
-ckb_url = "http://127.0.0.1:8121"
+enabled = true
+ckb_url = "http://47.111.169.36:8121"
 
 [network]
 # default is false
-enabled = true
+enabled = false
 ckb_network_name = "aggron" # "lina" | "aggron"
 ckb_network_identifier = "/ckb_testnet/10639e08"
 
@@ -15,6 +15,7 @@ ckb_network_identifier = "/ckb_testnet/10639e08"
 # enabled = false
 ckb_urls = []
 
+
 [influxdb]
 database = "ckb"
-url = "http://127.0.0.1:8086"
+url = "http://13.212.112.4:8086"
