@@ -1,22 +1,14 @@
 use crate::measurement::{self, IntoWriteQuery};
 use crate::subscribe::{Subscription, Topic};
 use chrono::{DateTime, Utc};
-use ckb_suite_rpc::ckb_jsonrpc_types::PoolTransactionEntry;
-use ckb_suite_rpc::Jsonrpc;
-use ckb_types::core::TransactionView;
-use ckb_types::packed::Byte32;
-use ckb_types::prelude::*;
+use ckb_suite_rpc::{ckb_jsonrpc_types::PoolTransactionEntry, Jsonrpc};
+use ckb_types::{core::TransactionView, packed::Byte32, prelude::*};
 use crossbeam::channel::Sender;
 use influxdb::{Timestamp, WriteQuery};
-use jsonrpc_core::futures::Stream;
-use jsonrpc_core::serde_from_str;
+use jsonrpc_core::{futures::Stream, serde_from_str};
 use jsonrpc_server_utils::tokio::prelude::*;
 use std::collections::HashMap;
 use std::time::Instant;
-
-// TODO unify the time type
-// TODO unify the `time` and `waiting_duration` definition for vary pool events
-// TODO filter duplicated notifications. i am not sure that ckb handle duplicated
 
 /// This module aims to the pool transactions
 /// This module produces the below measures:
@@ -28,65 +20,75 @@ use std::time::Instant;
 /// ### Why measure it?
 ///
 /// Know the transaction traffic and estimate the mean waiting time for a pending transaction become from pending to committed.
-
-// Consider a dashboard that tells a story about transaction events.
-//
-// List known transaction events here:
-//   - "pending", start pending in pool;
-//   - "pending_long", being pending for too long;
-//   - "propose", transit from pending to proposed, with the delay duration, proposed block number;
-//   - "propose_long", expire proposal window, with the delay duration;
-//   - "commit", transit from proposed to committed, with the delay duration, delay block count, proposed block number, committed block number;
-//   - "reject", reject by pool via subscribing "RejectTransaction"; it always contains explicit rejecting reason;
-//   - "remove", remove with known or unknown reason;
-//
-// The serie may be like below. Some of events are used to visualize in heatmap, some in table:
-// ```json
-// {
-//   "query_name": "transaction_state",
-//
-//   "transaction_hash": h256,
-//
-//   "event": "pending"/"pending_long"/"propose"/"propose_long"/"commit"/"reject"/"remove",
-//
-//   "extra": message, default is empty;
-//         if event is "propose"/"commit", this field is corresponding block number and hash;
-//         if event is "reject"/"remove", this field is corresponding reason;
-//
-//   "time": time instant;
-//         if event is "pending", assign it `now`;
-//         if event is "pending_long", keeps this field the same as "pending";
-//         if event is "propose", assign it proposed block timestamp;
-//         if event is "propose_long", keeps this field the same as "propose";
-//         if event is "commit", assign it committed block timestamp;
-//         if event is "reject", assign it `now`;
-//         if event is "remove", assign it `now`;
-//
-//   "elapsed": duration;
-//         if event is "pending", assign it 0;
-//         if event is "pending_long", assign `now - pending.time`;
-//         if event is "propose", assign `proposed.time - pending.time`;
-//         if event is "propose_long", assign `now - proposed.time`;
-//         if event is "commit", assign `committed.time - proposed.time";
-//         if event is "reject", assign it 0;
-//         if event is "remove", assign it `now - pending.time`;
-// }
-// ```
-
-// ## Implementation note
-
-// Maintain: handler maintains 2 transaction status: pending, proposed.
-//
-// information source: subscription of NewTransaction, subscription of NewBlock, subscription of RejectTransaction;
-//
-// When receives a pool transaction notification, we put it into `self.pending`;
-// Periodically travels and check the pending transactions, moves out if one has been committed
-// and produce a serie with "pool_event" = "commit", or with "pool_event" = "await" if elapsed is too long, or with
-// "pool_event" == "disappear" if the transaction disappear (RPC get_transaction returns None);
-//
-// We can retrieve all pool transactions via RPC `get_raw_tx_pool` at the start.
-//
-// TODO Use ticker to trigger checking
+///
+/// ### Note
+///
+/// Consider a dashboard that tells a story about transaction events.
+///
+/// List known transaction events here:
+///   - "pending", start pending in pool;
+///   - "pending_long", being pending for too long;
+///   - "propose", transit from pending to proposed, with the delay duration, proposed block number;
+///   - "propose_long", expire proposal window, with the delay duration;
+///   - "commit", transit from proposed to committed, with the delay duration, delay block count, proposed block number, committed block number;
+///   - "reject", reject by pool via subscribing "RejectTransaction"; it always contains explicit rejecting reason;
+///   - "remove", remove with known or unknown reason;
+///
+/// The serie may be like below. Some of events are used to visualize in heatmap, some in table:
+/// ```json
+/// {
+///   "query_name": "transaction_lifetime",
+///
+///   "transaction_hash": h256,
+///
+///   "event": "pending"/"pending_long"/"propose"/"propose_long"/"commit"/"reject"/"remove",
+///
+///   "extra": message, default is empty;
+///         if event is "propose"/"commit", this field is corresponding block number and hash;
+///         if event is "reject"/"remove", this field is corresponding reason;
+///
+///   "time": time instant;
+///         if event is "pending", assign it `now`;
+///         if event is "pending_long", keeps this field the same as "pending";
+///         if event is "propose", assign it proposed block timestamp;
+///         if event is "propose_long", keeps this field the same as "propose";
+///         if event is "commit", assign it committed block timestamp;
+///         if event is "reject", assign it `now`;
+///         if event is "remove", assign it `now`;
+///
+///   "elapsed": duration;
+///         if event is "pending", assign it 0;
+///         if event is "pending_long", assign `now - pending.time`;
+///         if event is "propose", assign `proposed.time - pending.time`;
+///         if event is "propose_long", assign `now - proposed.time`;
+///         if event is "commit", assign `committed.time - proposed.time";
+///         if event is "reject", assign it 0;
+///         if event is "remove", assign it `now - pending.time`;
+/// }
+/// ```
+///
+/// * maintaining fields:
+///   - pending
+///   - proposed
+///
+/// * Information source:
+///   - Subscription of RejectTransaction
+///     Pop out the transaction; produce a "reject" event
+///   - Subscription of NewTransaction
+///     Retrieve transaction status via `get_transaction`, then put into self.pending or
+///     self.proposed; if status is pending, then produce a "pending" event, otherwise produce no
+///     any events.
+///
+/// * Periodically checking
+///   Travels transactions in self.pending and self.proposed, check the transaction status
+///   transition;
+///
+/// * TODO
+///   - Retrieve all pool transactions via RPC `get_raw_tx_pool` at the start.
+///   - Use ticker to trigger checking
+///   - Unify the time type
+///   - unify the `time` and `waiting_duration` definition for vary pool events
+///   - filter duplicated notifications. i am not sure that ckb handle duplicated
 
 pub(crate) struct Handler {
     waiting: HashMap<Byte32, DateTime<Utc>>,
