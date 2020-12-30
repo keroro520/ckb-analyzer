@@ -9,7 +9,7 @@ mod logs;
 mod network_propagation;
 mod network_topology;
 mod reorganization;
-mod transaction_lifetime;
+mod tx_transition;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "topic", content = "args")]
@@ -24,7 +24,7 @@ pub enum Topic {
         ckb_rpc_url: String,
         ckb_subscribe_url: String,
     },
-    TransactionLifetime {
+    TxTransition {
         ckb_rpc_url: String,
         ckb_subscribe_url: String,
     },
@@ -96,11 +96,11 @@ impl Topic {
                 handler.run().await;
             }
 
-            Self::TransactionLifetime {
+            Self::TxTransition {
                 ckb_rpc_url,
                 ckb_subscribe_url,
             } => {
-                let (handler, subscription) = transaction_lifetime::Handler::new(
+                let (handler, subscription) = tx_transition::Handler::new(
                     ckb_rpc_url,
                     ckb_subscribe_url,
                     query_sender.clone(),

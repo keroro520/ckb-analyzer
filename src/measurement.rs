@@ -122,15 +122,16 @@ pub struct Reorganization {
 }
 
 #[derive(InfluxDbWriteable, Clone, Debug)]
-pub struct TransactionState {
+pub struct TxTransition {
     // timestamp of entering in transaction pool
     pub time: Timestamp,
 
-    pub waiting_duration: u64, // ms
+    pub elapsed: u64, // ms
+
     #[tag]
-    pub pool_event: String,
-    // #[tag]
-    // pub transaction_hash: String,
+    pub event: String,
+    #[tag]
+    pub txhash: String,
 }
 
 #[derive(InfluxDbWriteable, Clone, Debug)]

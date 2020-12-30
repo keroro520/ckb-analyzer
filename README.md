@@ -50,7 +50,7 @@ CKB_ANALYZER_CONFIG=config/test.toml ckb-analyzer
 * [ ] miner
   - [ ] the miner node of a specified block (ip or lock args)
 
-* [ ] transaction lifetime (mainly focus the traffic and state transition latency)
+* [ ] transaction transition (mainly focus the transaction traffic and state transition latency)
   - [ ] pending
   - [ ] pending too long
   - [ ] propose
@@ -72,7 +72,11 @@ CKB_ANALYZER_CONFIG=config/test.toml ckb-analyzer
   - [ ] error and warning events
   - [ ] sufficient events, recognize via regex patterning; better structure these logs
 
+## Debug suites
+
 * [ ] persist recent transactions (debug suite)
+
+* [ ] reproduce context
 
 ## Monitoring alerts
 
@@ -87,7 +91,7 @@ CKB_ANALYZER_CONFIG=config/test.toml ckb-analyzer
   - [ ] block time interval is shorter/longer then threshold
   - [ ] a big epoch adjustment
 
-* [ ] transaction lifetime issues
+* [ ] transaction transition issues
   - [ ] too many transactions at a certain state
 
 * [ ] logged issues

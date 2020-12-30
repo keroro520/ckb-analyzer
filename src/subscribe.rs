@@ -15,9 +15,16 @@ use std::net::SocketAddr;
 #[derive(Serialize, Deserialize, PartialEq, Eq, Hash, Debug, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 pub enum Topic {
+    /// Subscribe new tip headers.
     NewTipHeader,
+    /// Subscribe new tip blocks.
     NewTipBlock,
+    /// Subscribe new transactions which are submitted to the pool.
     NewTransaction,
+    /// Subscribe in-pool transactions which proposed on chain.
+    ProposedTransaction,
+    /// Subscribe transactions which are abandoned by tx-pool.
+    RejectedTransaction,
 }
 
 #[allow(clippy::needless_return)]
