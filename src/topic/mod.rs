@@ -17,9 +17,6 @@ pub enum Topic {
     CanonicalChain {
         ckb_rpc_url: String,
     },
-    NetworkTopology {
-        ckb_rpc_urls: Vec<String>,
-    },
     Reorganization {
         ckb_rpc_url: String,
         ckb_subscribe_url: String,
@@ -35,6 +32,9 @@ pub enum Topic {
     NetworkPropagation {
         ckb_network_identifier: String,
         ckb_network_config: NetworkConfig,
+    },
+    NetworkTopology {
+        ckb_rpc_urls: Vec<String>,
     },
 }
 

@@ -2,5 +2,5 @@
 /.idea
 /data
 /network
-config.backup/
+config/
 *.swp
